@@ -1,0 +1,7 @@
+/**
+ * Dashboard styles, to override bootstrap where needed.
+ */
+
+#server-config-port-input {
+  width: 6em;
+}
