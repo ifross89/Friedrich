@@ -133,16 +133,6 @@ function chartsUpdater(context) {
             }
         }
 
-        d3.select("#time-series-container").selectAll(".axis")
-            .data(["top", "bottom"])
-            .enter().append("div")
-            .attr("class", function(d) {return d + " axis"})
-            .each(function(d) {d3.select(this).call(context.axis().ticks(12).orient(d)); });
-
-        d3.select("#time-series-container").append("div")
-            .attr("class", "rule")
-            .call(context.rule());
-
         d3.select("#time-series-container")
             .selectAll(".horizon")
             .data(metrics)
@@ -153,7 +143,25 @@ function chartsUpdater(context) {
 }
 
 /**
- * Call from body onLoad, after scripts loaded.
+ * Setup the axis and rule. This is only done once, as it shouldn't change.
+ */
+function setupChartArea() {
+    d3.select("#time-series-container").selectAll(".axis")
+        .data(["top", "bottom"])
+        .enter().append("div")
+        .attr("class", function(d) {return d + " axis"})
+        .each(function(d) {
+            d3.select(this).call(dash.context.axis().ticks(12).orient(d));
+        });
+
+    d3.select("#time-series-container")
+        .append("div")
+        .attr("class", "rule")
+        .call(dash.context.rule());
+}
+
+/**
+ * call from body onLoad, after scripts loaded.
  */
 dash.onLoad = function () {
     dash.context = cubism.context()
@@ -161,5 +169,6 @@ dash.onLoad = function () {
         .step(1000);
 
     this.openQuery();
+    setupChartArea();
     window.setInterval(chartsUpdater(dash.context), 5000);
 }
