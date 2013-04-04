@@ -1,4 +1,4 @@
-# Bernhard
+# Friedrich
 
 Time-series visualization for [Riemann](http://riemann.io/), based on the
 [Cubism.js](http://square.github.com/cubism/) library.

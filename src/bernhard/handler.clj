@@ -1,4 +1,4 @@
-(ns bernhard.handler
+(ns friedrich.handler
   "Simple Compojure/Ring handler to host the static pages."
   (:require [compojure.core     :refer :all]
             [compojure.handler  :as handler]
