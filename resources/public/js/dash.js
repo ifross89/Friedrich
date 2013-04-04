@@ -10,7 +10,10 @@ dash = {
     socket: null,
 
     // Events received from Riemann.
-    events: {}
+    events: {},
+
+    // Cubism context
+    context: null
 };
 
 //
@@ -153,10 +156,10 @@ function chartsUpdater(context) {
  * Call from body onLoad, after scripts loaded.
  */
 dash.onLoad = function () {
-    var context = cubism.context()
-        .size(900)
+    dash.context = cubism.context()
+        .size(window.innerWidth)
         .step(1000);
 
     this.openQuery();
-    window.setInterval(chartsUpdater(context), 5000);
+    window.setInterval(chartsUpdater(dash.context), 5000);
 }
