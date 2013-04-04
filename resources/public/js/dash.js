@@ -121,8 +121,7 @@ function eventsMetric(host, service, context) {
 function chartsUpdater(context) {
     return function() {
         var horizon = context.horizon()
-            .height(30)
-            .extent([0, 0.25]);
+            .height(30);
 
         var metrics = [];
         for(host in dash.events) {
