@@ -112,7 +112,18 @@ function eventsMetric(host, service, context) {
         }
 
         callback(null, values);
-    }, host + ": " + service);
+    }, service);
+}
+
+/**
+ * Return a collection of metric functions for the given host's
+ * set of services in the events index.
+ */
+function metricsForHost(host) {
+    return _.map(_.keys(dash.events[host]),
+                 function(service) {
+                     return eventsMetric(host, service, dash.context);
+                 });
 }
 
 /**
@@ -134,11 +145,19 @@ function chartsUpdater(context) {
         }
 
         d3.select("#time-series-container")
-            .selectAll(".horizon")
-            .data(metrics)
+            .selectAll(".host-section")
+            .data(_.reject(_.keys(dash.events),
+                           function(h) {return h == "undefined";}))
             .enter().append("div")
-            .attr("class", "horizon")
-            .call(horizon);
+                    .attr("class", "host-section")
+                    .append("h3").text(function(d) {return d});
+
+        d3.selectAll(".host-section")
+            .selectAll(".horizon")
+            .data(metricsForHost)
+            .enter().append("div")
+                    .attr("class", "horizon")
+                    .call(horizon);
     }
 }
 
