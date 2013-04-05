@@ -145,7 +145,9 @@ function chartsUpdater(context) {
                          function(host) {return host;}))
             .enter().append("div")
                     .attr("class", "host-section")
-                    .append("h3").text(function(d) {return d});
+                    .append("span")
+                    .attr("class", "lead")
+                    .text(function(d) {return d});
 
         d3.selectAll(".host-section")
             .selectAll(".horizon")
@@ -175,6 +177,64 @@ function setupChartArea() {
 }
 
 /**
+ * Return an array of all the unique service names in
+ * the current dash.events index, across all hosts.
+ */
+dash.uniqueServices = function() {
+    return _.uniq(
+        _.reduce(
+            _.map(_.values(this.events), _.keys),
+            function(x, y) {
+                return x.concat(y);
+            }, []));
+}
+
+/**
+ * Update the active services and chart view following
+ * changes to settings.
+ */
+dash.settingsUpdate = function() {
+    console.log("Updating settings...");
+}
+
+/**
+ * Set up the state toggle for the settings button.
+ */
+function initSettings() {
+    d3.select("#settings-icon")
+      .on("click", function(d, i) {
+          var isVisible = d3.select("#settings-form").style("display") != "none";
+
+          d3.select("#settings-background")
+              .classed("settings-button", isVisible)
+              .classed("settings-full", !isVisible);
+
+          d3.select("#settings-form")
+            .style("display", isVisible ? "none" : "block");
+
+          if (isVisible) {
+              // View is closing, so register changes.
+              dash.settingsUpdate();
+          } else {
+              // View is opening, load active services state.
+              d3.select("#settings-active-services")
+                .selectAll(".service-selector")
+                .data(dash.uniqueServices())
+                .enter()
+                  .append("div")
+                  .classed("service-selector", true)
+                  .each(function(d) {
+                      d3.select(this)
+                          .append("input")
+                          .attr("type", "checkbox");
+
+                      d3.select(this).text(d);
+                  });
+          }
+      });
+}
+
+/**
  * call from body onLoad, after scripts loaded.
  */
 dash.onLoad = function () {
@@ -182,6 +242,7 @@ dash.onLoad = function () {
         .size(window.innerWidth)
         .step(1000);
 
+    initSettings();
     this.openQuery();
     setupChartArea();
     window.setInterval(chartsUpdater(dash.context), 5000);

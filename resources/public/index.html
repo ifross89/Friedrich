@@ -11,7 +11,28 @@
   </head>
 
   <body onLoad="dash.onLoad()">
+
+    <div id="settings-panel">
+      <div id="settings-background" class="settings settings-button">
+        <img id="settings-icon" src="img/wrench.png" class="wrench-button"/>
+        <div id="settings-form" class="container-flow" style="display: none;">
+          <div class="settings-form-section">
+            <span class="settings-form-heading">Riemann Server</span>
+            <br/>
+            <span class="container-flow">
+              <input id="server-config-host-input" type="text" value="localhost" />
+              <input id="server-config-port-input" type="text" value="5556" />
+            </span>
+          </div>
+          <div class="settings-form-section">
+            <span class="settings-form-heading">Services</span>
+            <div id="settings-active-services" class="settings-form-section"></div>
+          </div>
+      </div>
+    </div>
+
     <div id="time-series-container" class="container"></div>
+
   </body>
 
 </html>
