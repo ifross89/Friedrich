@@ -6,7 +6,7 @@ dash = {
     baseURL: "ws://localhost:5556",
 
     // Query state
-    query: "tagged \"foo\"",
+    query: "true",
     socket: null,
 
     // Events received from Riemann.
@@ -136,13 +136,6 @@ function chartsUpdater(context) {
     return function() {
         var horizon = context.horizon()
             .height(30);
-
-        var metrics = [];
-        for(host in dash.events) {
-            for(service in dash.events[host]) {
-                metrics.push(eventsMetric(host, service, context))
-            }
-        }
 
         d3.select("#time-series-container")
             .selectAll(".host-section")
