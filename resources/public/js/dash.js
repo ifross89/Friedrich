@@ -120,7 +120,8 @@ function eventsMetric(host, service, context) {
  * set of services in the events index.
  */
 function metricsForHost(host) {
-    return _.map(_.keys(dash.events[host]),
+    return _.map(_.sortBy(_.keys(dash.events[host]),
+                          function(service) {return service;}),
                  function(service) {
                      return eventsMetric(host, service, dash.context);
                  });
@@ -139,8 +140,9 @@ function chartsUpdater(context) {
 
         d3.select("#time-series-container")
             .selectAll(".host-section")
-            .data(_.reject(_.keys(dash.events),
-                           function(h) {return h == "undefined";}))
+            .data(_.sortBy(_.reject(_.keys(dash.events),
+                                   function(h) {return h == "undefined";}),
+                         function(host) {return host;}))
             .enter().append("div")
                     .attr("class", "host-section")
                     .append("h3").text(function(d) {return d});
