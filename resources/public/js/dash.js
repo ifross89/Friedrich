@@ -100,7 +100,7 @@ function eventsMetric(host, service, context) {
 
         var eventIndex = 0;
         for(; start <= stop; start += step) {
-            var nextMetric = NaN;
+            var nextMetric = _.last(values) || NaN;
             var bucket = [];
 
             for(; eventIndex < eventBuffer.length
@@ -320,7 +320,7 @@ dash.forceRefresh = function() {
 dash.onLoad = function () {
     dash.context = cubism.context()
         .size(window.innerWidth)
-        .step(1000);
+        .step(500);
 
     initSettings();
     setupChartArea();
