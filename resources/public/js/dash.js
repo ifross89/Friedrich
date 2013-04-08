@@ -11,7 +11,8 @@ dash = {
     // internal state
     socket: null,
     events: {},
-    context: null
+    context: null,
+    updateFn: null
 };
 
 //
@@ -80,6 +81,11 @@ dash.openQuery = function() {
  */
 function eventsMetric(host, service, context) {
     return context.metric(function(start, stop, step, callback) {
+        if(!(dash.events[host] && dash.events[host][service])) {
+            // This metric is no-longer valid - return NaN sequence.
+            return _((stop - start) / step).times(function(n) {return NaN;});
+        }
+
         var eventBuffer = dash.events[host][service];
 
         values = [];
@@ -119,11 +125,14 @@ function eventsMetric(host, service, context) {
  * set of services in the events index.
  */
 function metricsForHost(host) {
-    return _.map(_.sortBy(_.keys(dash.events[host]),
-                          function(service) {return service;}),
-                 function(service) {
-                     return eventsMetric(host, service, dash.context);
-                 });
+    return _.chain(dash.events[host])
+            .keys()
+            .filter(dash.serviceState)
+            .sortBy(function(s){return s;})
+            .map(function(s) {
+                return eventsMetric(host, s, dash.context);
+            })
+            .value();
 }
 
 /**
@@ -137,23 +146,27 @@ function chartsUpdater(context) {
         var horizon = context.horizon()
             .height(30);
 
-        d3.select("#time-series-container")
-            .selectAll(".host-section")
-            .data(_.sortBy(_.reject(_.keys(dash.events),
-                                   function(h) {return h == "undefined";}),
-                         function(host) {return host;}))
-            .enter().append("div")
-                    .attr("class", "host-section")
-                    .append("span")
-                    .attr("class", "lead")
-                    .text(function(d) {return d});
+        var hosts = d3.select("#time-series-container")
+                      .selectAll(".host-section")
+                      .data(_.sortBy(_.reject(_.keys(dash.events),
+                                              function(h) {return h == "undefined";}),
+                                     function(host) {return host;}));
 
-        d3.selectAll(".host-section")
-            .selectAll(".horizon")
-            .data(metricsForHost)
-            .enter().append("div")
-                    .attr("class", "horizon")
-                    .call(horizon);
+        hosts.exit().remove();
+        hosts.enter().append("div")
+                     .attr("class", "host-section")
+                     .append("span")
+                     .attr("class", "lead")
+                     .text(function(d) {return d});
+
+        var services = d3.selectAll(".host-section")
+                         .selectAll(".horizon")
+                         .data(metricsForHost);
+
+        services.exit().remove();
+        services.enter().append("div")
+                        .attr("class", "horizon")
+                        .call(horizon);
     }
 }
 
@@ -193,15 +206,17 @@ dash.uniqueServices = function() {
  * changes to settings.
  */
 dash.settingsUpdate = function() {
-    dash.serverHostName = d3.select("#server-config-host-input").attr("value");
-    dash.serverPort = d3.select("#server-config-port-input").attr("value");
-    dash.query = d3.select("#query-input").attr("value");
+    dash.serverHostName = d3.select("#server-config-host-input").property("value");
+    dash.serverPort = d3.select("#server-config-port-input").property("value");
+    dash.query = d3.select("#query-input").property("value");
 
     d3.select("#settings-active-services")
       .selectAll(".service-checkbox")
       .each(function(service) {
           dash.services[service] = this.checked;
-      })
+      });
+
+    this.forceRefresh();
 }
 
 /**
@@ -270,6 +285,30 @@ function initSettings() {
               restoreSettingsForm();
           }
       });
+
+    d3.select("#clear-event-buffers-input")
+      .on("click", function(d, i) {
+          dash.clearBuffers();
+      });
+}
+
+/**
+ * Delete recorded event data from buffers and reconnect.
+ */
+dash.clearBuffers = function() {
+    this.socket.close();
+    this.events = {};
+    this.forceRefresh();
+}
+
+/**
+ * Force reconnection of the query and redraw of charts.
+ */
+dash.forceRefresh = function() {
+    if(this.socket) this.socket.close();
+    this.openQuery();
+    this.updateFn = chartsUpdater(dash.context);
+    this.updateFn();
 }
 
 /**
@@ -281,7 +320,7 @@ dash.onLoad = function () {
         .step(1000);
 
     initSettings();
-    this.openQuery();
     setupChartArea();
-    window.setInterval(chartsUpdater(dash.context), 5000);
+    this.forceRefresh();
+    window.setInterval(function() {dash.updateFn()}, 5000);
 }

@@ -20,14 +20,14 @@
             <span class="settings-form-heading">Riemann Server</span>
             <br/>
             <span class="container-flow">
-              <input id="server-config-host-input" type="text" value="localhost" />
-              <input id="server-config-port-input" type="text" value="5556" />
+              <input id="server-config-host-input" type="text" />
+              <input id="server-config-port-input" type="text" />
             </span>
           </div>
           <div class="settings-form-section">
             <span class="settings-form-heading">Query</span>
             <br/>
-            <input id="query-input" type="text" value="true" />
+            <input id="query-input" type="text" />
             <p>For help writing queries, see
               <a href="http://riemann.io/concepts.html" target="_blank">Riemann Concepts</a>
             </p>
@@ -36,6 +36,10 @@
             <span class="settings-form-heading">Services</span>
             <div id="settings-active-services" class="settings-form-section"></div>
           </div>
+          <div class="settings-form-section">
+            <input type="button" id="clear-event-buffers-input" value="Clear Buffers"/>
+          </div>
+        </div>
       </div>
     </div>
 
