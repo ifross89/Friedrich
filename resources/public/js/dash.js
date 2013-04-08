@@ -148,9 +148,12 @@ function chartsUpdater(context) {
 
         var hosts = d3.select("#time-series-container")
                       .selectAll(".host-section")
-                      .data(_.sortBy(_.reject(_.keys(dash.events),
-                                              function(h) {return h == "undefined";}),
-                                     function(host) {return host;}));
+                      .data(_.chain(dash.events)
+                             .keys()
+                             .reject(function(host) {return host == "undefined";})
+                             .sortBy(_.identity)
+                             .value(),
+                           _.identity);
 
         hosts.exit().remove();
         hosts.enter().append("div")
@@ -161,7 +164,7 @@ function chartsUpdater(context) {
 
         var services = d3.selectAll(".host-section")
                          .selectAll(".horizon")
-                         .data(metricsForHost);
+                         .data(metricsForHost, _.identity);
 
         services.exit().remove();
         services.enter().append("div")
