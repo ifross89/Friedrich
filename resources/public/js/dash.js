@@ -2,17 +2,15 @@
  * Dashboard State.
  */
 dash = {
-    // Riemann server base URL for WebSockets API
-    baseURL: "ws://localhost:5556",
-
-    // Query state
+    // Default settings, can be changed by settings panel.
+    serverHostName: "localhost",
+    serverPort: "5556",
     query: "true",
+    services: {},
+
+    // internal state
     socket: null,
-
-    // Events received from Riemann.
     events: {},
-
-    // Cubism context
     context: null
 };
 
@@ -63,7 +61,8 @@ dash.addEvent = function(e) {
  * open WebSocket object.
  */
 dash.openQuery = function() {
-    var uri = this.baseURL
+    var uri = "ws://" + this.serverHostName + ":"
+        + this.serverPort
         + "/index"
         + "?subscribe=true"
         + "&query=" + encodeURIComponent(this.query);
@@ -194,7 +193,59 @@ dash.uniqueServices = function() {
  * changes to settings.
  */
 dash.settingsUpdate = function() {
-    console.log("Updating settings...");
+    dash.serverHostName = d3.select("#server-config-host-input").attr("value");
+    dash.serverPort = d3.select("#server-config-port-input").attr("value");
+    dash.query = d3.select("#query-input").attr("value");
+
+    d3.select("#settings-active-services")
+      .selectAll(".service-checkbox")
+      .each(function(service) {
+          dash.services[service] = this.checked;
+      })
+}
+
+/**
+ * Check the visibility settings for this service. If the
+ * service is not (yet) known to the dash, return true so
+ * that it is initially rendered, until the user specifies
+ * otherwise.
+ */
+dash.serviceState = function(service) {
+    return dash.services[service] == undefined
+           || dash.services[service];
+}
+
+/**
+ * Load the settings form state from dash object.
+ */
+function restoreSettingsForm() {
+    d3.select("#server-config-host-input")
+      .attr("value", dash.serverHostName);
+
+    d3.select("#server-config-port-input")
+      .attr("value", dash.serverPort);
+
+    d3.select("#query-input")
+      .attr("value", dash.query);
+
+    d3.select("#settings-active-services")
+        .selectAll(".service-selector")
+        .data(dash.uniqueServices())
+        .enter()
+        .append("div")
+        .classed("service-selector", true)
+        .each(function(d) {
+            d3.select(this)
+                .append("input")
+                .attr("type", "checkbox")
+                .attr("class", "service-checkbox")
+                .attr("checked", dash.serviceState(d) ? "checked" : null);
+
+            d3.select(this)
+                .append("span")
+                .attr("class", "service-label")
+                .text(d);
+        });
 }
 
 /**
@@ -216,24 +267,7 @@ function initSettings() {
               // View is closing, so register changes.
               dash.settingsUpdate();
           } else {
-              // View is opening, load active services state.
-              d3.select("#settings-active-services")
-                .selectAll(".service-selector")
-                .data(dash.uniqueServices())
-                .enter()
-                  .append("div")
-                  .classed("service-selector", true)
-                  .each(function(d) {
-                      d3.select(this)
-                          .append("input")
-                          .attr("type", "checkbox")
-                          .attr("class", "service-checkbox");
-
-                      d3.select(this)
-                          .append("span")
-                          .attr("class", "service-label")
-                          .text(d);
-                  });
+              restoreSettingsForm();
           }
       });
 }
