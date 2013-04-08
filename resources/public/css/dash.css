@@ -26,6 +26,7 @@
 .settings-button {
   height: 32px;
   width: 32px;
+  opacity: 0.5;
 }
 
 .settings-full {
