@@ -226,9 +226,13 @@ function initSettings() {
                   .each(function(d) {
                       d3.select(this)
                           .append("input")
-                          .attr("type", "checkbox");
+                          .attr("type", "checkbox")
+                          .attr("class", "service-checkbox");
 
-                      d3.select(this).text(d);
+                      d3.select(this)
+                          .append("span")
+                          .attr("class", "service-label")
+                          .text(d);
                   });
           }
       });
