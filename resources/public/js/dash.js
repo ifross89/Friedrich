@@ -196,12 +196,13 @@ function setupChartArea() {
  * the current dash.events index, across all hosts.
  */
 dash.uniqueServices = function() {
-    return _.uniq(
-        _.reduce(
-            _.map(_.values(this.events), _.keys),
-            function(x, y) {
-                return x.concat(y);
-            }, []));
+    return _.chain(dash.events)
+            .values()
+            .map(_.keys)
+            .reduce(function(x, y) {return x.concat(y);})
+            .uniq()
+            .sort()
+            .value();
 }
 
 /**
@@ -287,6 +288,15 @@ function initSettings() {
           } else {
               restoreSettingsForm();
           }
+      });
+
+    d3.select("#services-select-all-input")
+      .on("click", function(d, i) {
+          var state = this.checked;
+          d3.selectAll(".service-checkbox")
+            .each(function(d, i) {
+                this.checked = state;
+            });
       });
 
     d3.select("#clear-event-buffers-input")
